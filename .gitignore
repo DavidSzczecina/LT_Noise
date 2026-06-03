@@ -1,0 +1,8 @@
+data
+results
+slurm_output
+old
+venvs/
+envs/
+.ipynb_checkpoints
+__pycache__
