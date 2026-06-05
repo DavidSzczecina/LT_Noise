@@ -7,7 +7,8 @@
 #SBATCH --gpus=a100_1g.5gb:1
 #SBATCH --output=slurm_output/LT_Noise_MNIST_%j.out
 #SBATCH --error=slurm_output/LT_Noise_MNIST_%j.err
-
+#SBATCH --mail-user=dszczeci@uwaterloo.ca
+#SBATCH --mail-type=END
 
 set -euo pipefail
 

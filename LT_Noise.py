@@ -139,7 +139,7 @@ def make_long_tailed_noisy_dataset(
     )
 
     metadata = {
-        "imbalance_mode": "exponential",
+        #"imbalance_mode": "exponential",
         "imbalance_factor": imbalance_factor,
         "class_order": class_order.tolist(),
         "class_counts": class_counts,

@@ -8,7 +8,7 @@
 #SBATCH --output=slurm_output/LT_Noise_Ablate_c100_%j.out
 #SBATCH --error=slurm_output/LT_Noise_Ablate_c100_%j.err
 #SBATCH --mail-user=dszczeci@uwaterloo.ca
-#SBATCH --mail-type=ALL
+#SBATCH --mail-type=END
 
 set -euo pipefail
 
@@ -24,7 +24,7 @@ source ./envs/ssl_env/bin/activate
 
 echo ">>> Running experiments..."
 
-python LT_Noise.py --dataset cifar100 --epochs 15 --model resnet18 --exp_name cifar100 --output_csv cifar100_resnet18_ablate --seeds 1 2 3 4 5 6 7 8 9 10
+python LT_Noise.py --dataset cifar100 --epochs 15 --model resnet18 --output_csv cifar100_resnet18 --seeds 1 2 3 4 5 6 7 8 9 10
 
 
 echo "[INFO] Job complete."
