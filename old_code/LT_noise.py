@@ -3,6 +3,8 @@ import random
 import argparse
 import numpy as np
 import pandas as pd
+from datetime import datetime
+import time
 
 import torch
 import torch.nn as nn
@@ -129,7 +131,7 @@ def run_single_experiment(
         num_workers=2,
         pin_memory=True,
     )
-    model = get_model(args.dataset).to(device)
+    model = get_model(args.dataset, args).to(device)
     optimizer = optim.AdamW(
         model.parameters(),
         lr=lr,
@@ -191,6 +193,7 @@ def results_to_long_class_df(results_df, num_classes=10):
 
 
 def run_experiment_grid(
+    args,
     dataset_name,
     data_dir="../datasets",
     output_dir="./results",
@@ -211,9 +214,14 @@ def run_experiment_grid(
 
     os.makedirs(output_dir, exist_ok=True)
 
-    summary_path = os.path.join(output_dir, f"{dataset_name}_summary_results.csv")
-    class_path = os.path.join(output_dir, f"{dataset_name}_per_class_results.csv")
-    avg_class_path = os.path.join(output_dir, f"{dataset_name}_avg_by_class_rank_results.csv")
+    #summary_path = os.path.join(output_dir, f"{dataset_name}_summary_results.csv")
+    #class_path = os.path.join(output_dir, f"{dataset_name}_per_class_results.csv")
+    #avg_class_path = os.path.join(output_dir, f"{dataset_name}_avg_by_class_rank_results.csv")
+    timestamp = datetime.now().strftime("%H%M%S%f")
+    timestamp = int(time.time())
+    summary_path = os.path.join(output_dir,f"{dataset_name}_summary_results_{args.exp_name}_{timestamp}.csv")
+    class_path = os.path.join(output_dir,f"{dataset_name}_per_class_results_{args.exp_name}_{timestamp}.csv")
+    avg_class_path = os.path.join(output_dir,f"{dataset_name}_avg_by_class_rank_results_{args.exp_name}_{timestamp}.csv")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Device: {device}")
@@ -304,9 +312,12 @@ if __name__ == "__main__":
     parser.add_argument("--noise_rates", type=float, nargs="+", default=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
     parser.add_argument("--imbalance_ratios", type=float, nargs="+", default=[1.0, 0.5, 0.1, 0.05, 0.01, 0.005])
     parser.add_argument("--seeds", type=int, nargs="+", default=[1, 2, 3, 4, 5])
+    parser.add_argument("--model", type=str, default="smallCNN")
+    parser.add_argument("--exp_name", type=str, default="")
     args = parser.parse_args()
 
     run_experiment_grid(
+        args=args,
         dataset_name=args.dataset,
         data_dir=args.data_dir,
         output_dir=args.output_dir,

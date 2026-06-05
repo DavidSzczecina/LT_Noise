@@ -32,9 +32,14 @@ def make_long_tailed_noisy_dataset(
     seed: int,
 ):
     rng = np.random.default_rng(seed)
+    
     #targets = np.array(base_dataset.targets)
     targets = np.asarray(base_dataset.targets, dtype=np.int64)
+
     class_order = rng.permutation(num_classes)
+    
+    print(f"Seed {seed}: class_order = {class_order.tolist()}")
+
     indices_kept = []
     clean_targets_kept = []
 
