@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=LT_Noise_Ablate_c10
 #SBATCH --account=def-pfieguth
-#SBATCH --time=12:00:00
+#SBATCH --time=16:00:00
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=8000M
 #SBATCH --gpus=a100_1g.5gb:1
@@ -24,7 +24,7 @@ source ./envs/ssl_env/bin/activate
 
 echo ">>> Running experiments..."
 
-python LT_Noise.py --dataset cifar10 --epochs 15 --model resnet18 --output_csv cifar10_resnet18 --seeds 1 2 3 4 5 6 7 8 9 10
+python LT_Noise.py --dataset cifar10 --epochs 15 --model resnet18 --output_csv cifar10_resnet18_sx2 --seeds 21 22 23 24 25
 
 
 echo "[INFO] Job complete."

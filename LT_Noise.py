@@ -3,7 +3,7 @@ import csv
 import json
 import os
 import random
-from datetime import datetime
+from datetime import datetime, time
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
@@ -86,6 +86,7 @@ def make_long_tailed_noisy_dataset(
     imbalance_factor: float,
     noise_rate: float,
     seed: int,
+    imbalance_mode: str = "exponential",
 ) -> Tuple[NoisyLabelDataset, Dict]:
     """Creates an exponential long-tailed dataset and applies symmetric label noise."""
     if not 0 <= noise_rate <= 1:
@@ -97,7 +98,29 @@ def make_long_tailed_noisy_dataset(
 
     class_indices = {c: np.where(targets == c)[0] for c in range(num_classes)}
     max_count = min(len(class_indices[c]) for c in range(num_classes))
-    counts_per_rank = compute_exponential_class_counts(max_count, num_classes, imbalance_factor)
+    
+    if imbalance_mode == "exponential":
+        counts_per_rank = compute_exponential_class_counts(
+            max_count=max_count, num_classes=num_classes, imbalance_factor=imbalance_factor)
+
+    elif imbalance_mode == "single_class":
+        counts_per_rank = [max_count] * num_classes
+        counts_per_rank[-1] = max(1, int(max_count * imbalance_factor))
+
+        if False:
+            minority_class = seed % num_classes
+            class_counts = {}
+            class_ranks = {}
+            for cls in range(num_classes):
+                if cls == minority_class:
+                    class_counts[cls] = max(1, int(max_count * imbalance_factor))
+                    class_ranks[cls] = num_classes - 1
+                else:
+                    class_counts[cls] = max_count
+                    class_ranks[cls] = 0
+
+    else:
+        raise ValueError("imbalance_mode must be 'exponential' or 'single_class'.")
 
     indices_kept: List[int] = []
     clean_targets_kept: List[int] = []
@@ -139,7 +162,7 @@ def make_long_tailed_noisy_dataset(
     )
 
     metadata = {
-        #"imbalance_mode": "exponential",
+        "imbalance_mode": imbalance_mode,
         "imbalance_factor": imbalance_factor,
         "class_order": class_order.tolist(),
         "class_counts": class_counts,
@@ -321,6 +344,7 @@ def run_single_experiment(args, seed: int, imbalance_factor: float, noise_rate: 
         imbalance_factor=imbalance_factor,
         noise_rate=noise_rate,
         seed=seed,
+        imbalance_mode=args.imbalance_mode,
     )
 
     train_loader = DataLoader(
@@ -362,7 +386,7 @@ def run_single_experiment(args, seed: int, imbalance_factor: float, noise_rate: 
         "dataset": args.dataset,
         "model": args.model,
         "seed": seed,
-        "imbalance_mode": "exponential",
+        "imbalance_mode": metadata["imbalance_mode"],
         "imbalance_factor": imbalance_factor,
         "noise_rate": noise_rate,
         "epochs": args.epochs,
@@ -394,7 +418,7 @@ def make_output_path(args) -> Path:
         filename = f"{args.output_csv}.csv"
         return output_dir / filename
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%H%M%S%f")
     filename = f"{args.dataset}_{args.model}_longtail_noise_{timestamp}.csv"
     return output_dir / filename
 
@@ -448,6 +472,7 @@ def parse_args():
 
     parser.add_argument("--noise_rates", type=float, nargs="+", default=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
     parser.add_argument("--imbalance_factors", type=float, nargs="+", default=[1.0, 0.5, 0.1, 0.05, 0.01, 0.005])
+    parser.add_argument("--imbalance_mode", type=str, default="exponential", choices=["exponential", "single_class"])
     parser.add_argument("--seeds", type=int, nargs="+", default=[1, 2, 3, 4, 5])
 
 
